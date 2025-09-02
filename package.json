@@ -1,0 +1,17 @@
+{
+  "name": "cbt-project",
+  "version": "1.0.0",
+  "description": "CBT Application for Vercel",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^126.0.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ujian CBT - Informatika Kelas X</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        touch-action: manipulation;
+      }
+      .card {
+        background-color: #1f2937;
+        color: #f3f4f6;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease-in-out;
+      }
+      .option-btn {
+        background-color: #374151;
+        border: 1px solid #4b5563;
+        transition: background-color 0.2s, border-color 0.2s;
+      }
+      .option-btn:hover {
+        background-color: #4b5563;
+      }
+      .option-btn.selected {
+        background-color: #3b82f6;
+        border-color: #60a5fa;
+      }
+      textarea,
+      input {
+        background-color: #374151;
+        border: 1px solid #4b5563;
+      }
+      .nav-btn {
+        background-color: #374151;
+        border: 1px solid #4b5563;
+      }
+      .nav-btn.answered {
+        background-color: #166534;
+        border-color: #22c55e;
+      }
+      .nav-btn.marked {
+        background-color: #a16207;
+        border-color: #facc15;
+      }
+      .nav-btn.current {
+        background-color: #1d4ed8;
+        border-color: #60a5fa;
+        transform: scale(1.1);
+      }
+      .nav-btn.essay {
+        background-color: #581c87;
+        border-color: #a855f7;
+        color: #e9d5ff;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #111827;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+      }
+      .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4"
+  >
+    <div id="cbt-container" class="w-full max-w-6xl mx-auto">
+      <!-- Start Screen -->
+      <div id="start-screen" class="card text-center p-8 md:p-12">
+        <h1
+          class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-4"
+        >
+          Ujian CBT Informatika Kelas X
+        </h1>
+        <p class="text-gray-400 mb-6">
+          Materi: Berpikir Komputasional, Algoritma, Stack & Queue.
+        </p>
+        <div
+          class="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8 text-left space-y-4"
+        >
+          <input
+            id="student-name"
+            type="text"
+            placeholder="Masukkan Nama Lengkap Anda"
+            class="w-full p-3 rounded-lg text-gray-200"
+            autocomplete="off"
+          />
+          <input
+            id="student-class"
+            type="text"
+            placeholder="Masukkan Kelas Anda"
+            class="w-full p-3 rounded-lg text-gray-200"
+            autocomplete="off"
+          />
+        </div>
+        <button
+          id="start-btn"
+          class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg text-lg transition-transform transform hover:scale-105"
+        >
+          Mulai Ujian
+        </button>
+      </div>
+
+      <!-- Quiz Screen -->
+      <div id="quiz-screen" class="hidden flex flex-col lg:flex-row gap-6">
+        <!-- Main Question Area -->
+        <div class="card p-6 md:p-8 flex-grow">
+          <!-- Header -->
+          <div
+            class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-700 pb-4 mb-6 gap-4"
+          >
+            <div>
+              <h2 class="text-xl font-semibold">
+                Soal <span id="question-number"></span> dari 25
+              </h2>
+              <p id="question-type" class="text-sm text-blue-400"></p>
+            </div>
+            <button
+              id="mark-btn"
+              class="border border-yellow-500 text-yellow-500 font-semibold py-2 px-4 rounded-lg hover:bg-yellow-500 hover:text-gray-900 transition-colors"
+            >
+              Tandai Ragu-ragu
+            </button>
+          </div>
+          <div id="question-container" class="mb-6">
+            <p
+              id="question-text"
+              class="text-lg md:text-xl leading-relaxed whitespace-pre-wrap"
+            ></p>
+          </div>
+          <div
+            id="options-container"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          ></div>
+          <div id="essay-container" class="hidden">
+            <textarea
+              id="essay-answer"
+              class="w-full h-48 p-3 rounded-lg text-gray-200"
+              placeholder="Ketik jawaban esai Anda di sini..."
+            ></textarea>
+          </div>
+          <div class="mt-8 pt-4 border-t border-gray-700 flex justify-between">
+            <button
+              id="prev-btn"
+              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-8 rounded-lg transition-transform transform hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              Sebelumnya
+            </button>
+            <button
+              id="next-btn"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-transform transform hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              Berikutnya
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Panel -->
+        <div class="card w-full lg:w-80 p-6 flex-shrink-0">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Navigasi Soal</h3>
+            <div
+              id="timer"
+              class="text-lg font-bold bg-red-600 px-4 py-2 rounded-lg text-center"
+            >
+              45:00
+            </div>
+          </div>
+          <div id="nav-panel" class="grid grid-cols-5 gap-3 mb-6"></div>
+          <div class="flex items-center space-x-2 mb-2">
+            <div
+              class="w-4 h-4 rounded-full bg-green-800 border border-green-500"
+            ></div>
+            <span class="text-sm">Sudah Dijawab</span>
+          </div>
+          <div class="flex items-center space-x-2 mb-2">
+            <div
+              class="w-4 h-4 rounded-full bg-yellow-700 border border-yellow-400"
+            ></div>
+            <span class="text-sm">Ragu-ragu</span>
+          </div>
+          <div class="flex items-center space-x-2 mb-2">
+            <div
+              class="w-4 h-4 rounded-full bg-gray-700 border border-gray-600"
+            ></div>
+            <span class="text-sm">Belum Dijawab</span>
+          </div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div
+              class="w-4 h-4 rounded-full bg-purple-900 border border-purple-500"
+            ></div>
+            <span class="text-sm">Soal Esai</span>
+          </div>
+          <button
+            id="submit-btn"
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-lg"
+          >
+            Kumpulkan Ujian
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Screen (Simplified) -->
+      <div id="result-screen" class="hidden card text-center p-8 md:p-12">
+        <div id="submission-loading">
+          <h1 class="text-3xl font-bold text-yellow-400 mb-4">
+            Mengumpulkan Jawaban...
+          </h1>
+          <p class="text-gray-400">Mohon tunggu, jangan tutup halaman ini.</p>
+        </div>
+        <div id="submission-success" class="hidden">
+          <svg
+            class="mx-auto h-16 w-16 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h1
+            class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mt-4 mb-4"
+          >
+            Ujian Selesai!
+          </h1>
+          <p class="text-gray-300">
+            Jawaban Anda telah berhasil dikumpulkan. Terima kasih.
+          </p>
+        </div>
+        <div id="submission-error" class="hidden">
+          <svg
+            class="mx-auto h-16 w-16 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h1 class="text-3xl font-bold text-red-500 mt-4 mb-4">
+            Gagal Mengumpulkan!
+          </h1>
+          <p class="text-gray-300">
+            Terjadi kesalahan. Mohon coba lagi atau hubungi guru Anda.
+          </p>
+          <button
+            id="retry-submit-btn"
+            class="mt-8 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg"
+          >
+            Coba Kirim Ulang
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div
+      id="confirm-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+    >
+      <div class="card w-full max-w-md text-center p-8">
+        <h2 class="text-2xl font-bold mb-4">Konfirmasi</h2>
+        <p id="modal-text" class="text-gray-300 mb-8"></p>
+        <div class="flex justify-center gap-4">
+          <button
+            id="modal-cancel-btn"
+            class="bg-gray-600 hover:bg-gray-700 font-bold py-2 px-8 rounded-lg"
+          >
+            Batal
+          </button>
+          <button
+            id="modal-confirm-btn"
+            class="bg-red-600 hover:bg-red-700 font-bold py-2 px-8 rounded-lg"
+          >
+            Yakin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- DATA SOAL ---
+      const questions = [
+        // 20 Soal Pilihan Ganda
+        {
+          type: "mc",
+          question:
+            "Seorang siswa ingin menyusun daftar tugasnya berdasarkan tenggat waktu, dari yang paling mendesak hingga yang paling lama. Aspek Berpikir Komputasional (BK) yang paling dominan dalam kegiatan ini adalah...",
+          options: [
+            "Dekomposisi",
+            "Abstraksi",
+            "Algoritma",
+            "Pengenalan Pola",
+            "Reorganisasi",
+          ],
+          answer: "Algoritma",
+        },
+        {
+          type: "mc",
+          question:
+            "Manakah dari berikut ini yang merupakan contoh penerapan Dekomposisi dalam kehidupan sehari-hari?",
+          options: [
+            "Mengenali Bahwa semua lampu lalu lintas memiliki pola warna merah, kuning, hijau",
+            "Membuat Daftar belanja sebelum pergi ke pasar",
+            "Merakit sebuah meja dari IKEA dengan mengikuti buku panduan",
+            "Menggunakan peta untuk menemukan rute tercepat ke sekolah",
+            "Membuat akun media sosial",
+          ],
+          answer: "Merakit sebuah meja dari IKEA dengan mengikuti buku panduan",
+        },
+        {
+          type: "mc",
+          question:
+            "Jenis algoritma pencarian yang paling efisien untuk digunakan pada data yang sudah terurut adalah...",
+          options: [
+            "Linear Search",
+            "Binary Search",
+            "Bubble Search",
+            "Selection Search",
+            "Bubble Sort",
+          ],
+          answer: "Binary Search",
+        },
+        {
+          type: "mc",
+          question:
+            "Berikut adalah langkah-langkah dari algoritma Bubble Sort pada satu iterasi pertama untuk mengurutkan daftar [5, 1, 4, 2, 8] secara menaik. Manakah urutan yang benar?",
+          options: [
+            "[5,1,2,4,8]",
+            "[1,2,4,5,8]",
+            "[1,5,4,2,8] -> [1,4,5,2,8] -> [1,4,2,5,8] -> [1,4,2,5,8]",
+            "[1, 5, 4, 2, 8] -> [1, 5, 4, 2, 8] -> [1, 5, 4, 2, 8] -> [1, 5, 4, 2, 8]",
+            "[1,4,2,5,8]",
+          ],
+          answer: "[1,5,4,2,8] -> [1,4,5,2,8] -> [1,4,2,5,8] -> [1,4,2,5,8]",
+        },
+        {
+          type: "mc",
+          question:
+            "Operasi untuk menambahkan elemen ke dalam struktur data Queue disebut...",
+          options: ["Dequeue", "Enqueue", "Pop", "Push", "Peek"],
+          answer: "Enqueue",
+        },
+        {
+          type: "mc",
+          question: "Prinsip kerja struktur data Stack adalah...",
+          options: [
+            "Last-In, First-Out (LIFO)",
+            "Last-In, Last-Out (LILO)",
+            "First-In, Last-Out (FILO)",
+            "First-In, First-Out (FIFO)",
+            "Last-In, Last-Out (LILO)",
+          ],
+          answer: "Last-In, First-Out (LIFO)",
+        },
+        {
+          type: "mc",
+          question:
+            "Fitur 'Undo' (Ctrl+Z) pada aplikasi pengolah kata adalah contoh penerapan dari struktur data...",
+          options: ["Queue", "Stack", "Array", "Linked List", "Graph"],
+          answer: "Stack",
+        },
+        {
+          type: "mc",
+          question:
+            "Sistem antrean pada loket bank atau printer adalah contoh nyata dari penerapan...",
+          options: [
+            "Algoritma Sorting",
+            "Stack",
+            "Queue",
+            "Binary Search",
+            "Linear",
+          ],
+          answer: "Queue",
+        },
+        {
+          type: "mc",
+          question:
+            "Seorang programmer ingin mengimplementasikan fungsi 'back' pada browser. Struktur data apa yang paling sesuai untuk menyimpan riwayat halaman yang telah dikunjungi?",
+          options: [
+            "Array, karena mudah untuk menyimpan daftar URL.",
+            "Queue, karena halaman dikunjungi secara berurutan.",
+            "Stack, karena halaman terakhir yang dikunjungi adalah yang pertama kali ditampilkan saat 'back'.",
+            "Binary Search, untuk pencarian URL yang cepat.",
+            "Linear Search, karena kembali pada halaman sebelumnya",
+          ],
+          answer:
+            "Stack, karena halaman terakhir yang dikunjungi adalah yang pertama kali ditampilkan saat 'back'.",
+        },
+        {
+          type: "mc",
+          question:
+            "Diberikan daftar angka: [12, 3, 6, 18, 7, 15, 10]. Jika kita menggunakan algoritma Selection Sort untuk mengurutkan secara menaik, angka berapa yang akan berada di posisi pertama (indeks 0) setelah iterasi pertama selesai?",
+          options: ["18", "6", "3", "12", "10"],
+          answer: "3",
+        },
+        {
+          type: "mc",
+          question:
+            "Seorang koki membuat tumpukan pancake dalam urutan: Cokelat, Keju, Blueberry, dan Matcha. Lalu seorang pelanggan memesan pancake, pancake mana yang akan dia berikan?",
+          options: [
+            "Blue Berry",
+            "Keju",
+            "Tidak bisa ditentukan",
+            "Cokelat",
+            "Matcha",
+          ],
+          answer: "Matcha",
+        },
+        {
+          type: "mc",
+          question:
+            "Sebuah aplikasi pemutar musik memiliki fitur 'playlist'. Lagu diputar sesuai urutan penambahannya. Struktur data apa yang paling tepat untuk mengelola urutan pemutaran lagu ini?",
+          options: [
+            "Heap, untuk memprioritaskan lagu berdasarkan popularitas.",
+            "Stack, untuk memutar lagu yang baru ditambahkan terlebih dahulu.",
+            "Queue, untuk memutar lagu sesuai urutan penambahannya (pertama masuk, pertama diputar).",
+            "Hash Table, untuk mencari lagu dengan cepat.",
+            "Algoritmik, untuk mencari lagu sesuai dengan urutannya.",
+          ],
+          answer:
+            "Queue, untuk memutar lagu sesuai urutan penambahannya (pertama masuk, pertama diputar).",
+        },
+        {
+          type: "mc",
+          question:
+            "Anda diberi tugas untuk menemukan nomor telepon teman dalam buku telepon yang sudah diurutkan. Strategi Berpikir Komputasional (BK) yang paling efisien adalah...",
+          options: [
+            "Meminta orang lain untuk mencarikannya (Delegasi).",
+            "Mengacak semua halaman (Pendekatan Acak).",
+            "Membuka buku di halaman tengah, membandingkan nama, dan memutuskan untuk mencari di paruh depan atau belakang (Algoritma Binary Search).",
+            "Membaca dari halaman pertama sampai nama teman Anda ditemukan (Algoritma Linear Search).",
+            "Memecah menjadi beberapa halaman untuk mencarinya (Dekomposisi)",
+          ],
+          answer:
+            "Membuka buku di halaman tengah, membandingkan nama, dan memutuskan untuk mencari di paruh depan atau belakang (Algoritma Binary Search).",
+        },
+        {
+          type: "mc",
+          question:
+            "Jika sebuah Stack diimplementasikan menggunakan array dengan ukuran 5, dan operasi berikut dilakukan: PUSH(A), PUSH(B), POP(), PUSH(C), PUSH(D), PUSH(E), PUSH(F). Apa yang akan terjadi pada operasi PUSH(F)?",
+          options: [
+            "Stack akan berisi [A, C, D, E, F].",
+            "Akan terjadi error 'Stack Overflow (Kelebihan)",
+            "Akan terjadi error 'Stack Underflow' (Stack Kosong)",
+            "Elemen 'A' akan otomatis terhapus untuk memberi ruang bagi 'F'.",
+            "Tidak akan terjadi apa-apa.",
+          ],
+          answer: "Akan terjadi error 'Stack Overflow (Kelebihan)",
+        },
+        {
+          type: "mc",
+          question:
+            "Sebuah Queue kosong diisi dengan urutan operasi: Enqueue(10), Enqueue(20), Dequeue(), Enqueue(30), Enqueue(40), Dequeue(). Elemen manakah yang berada di posisi paling depan (front) dari Queue setelah semua operasi selesai?",
+          options: ["20", "40", "30", "10", "0"],
+          answer: "30",
+        },
+        {
+          type: "mc",
+          question:
+            "Dalam Berpikir Komputasional, proses mengabaikan detail yang tidak penting dan fokus pada informasi utama untuk memahami masalah disebut…",
+          options: [
+            "Abstraksi",
+            "Pengenalan Pola",
+            "Generalisasi",
+            "Algoritma",
+            "Dekomposisi",
+          ],
+          answer: "Abstraksi",
+        },
+        {
+          type: "mc",
+          question:
+            "Manakah perbedaan mendasar antara algoritma Linear Search dan Binary Search?",
+          options: [
+            "Binary Search dapat digunakan pada data yang tidak terurut.",
+            "Binary Search adalah algoritma pengurutan, bukan pencarian.",
+            "Linear Search lebih cepat untuk data yang besar.",
+            "Keduanya memiliki kompleksitas waktu yang sama pada kasus terbaik (best-case).",
+            "Linear Search memeriksa data satu per satu, sedangkan Binary Search membagi data menjadi dua bagian di setiap langkah.",
+          ],
+          answer:
+            "Linear Search memeriksa data satu per satu, sedangkan Binary Search membagi data menjadi dua bagian di setiap langkah.",
+        },
+        {
+          type: "mc",
+          question:
+            "Jika Anda memiliki daftar angka [9, 5, 2, 7] dan ingin mengurutkannya menggunakan Bubble Sort, bagaimana kondisi daftar tersebut setelah satu putaran (pass) pertama selesai?",
+          options: [
+            "[5, 2, 7, 9]",
+            "[5, 9, 2, 7]",
+            "[9, 2, 5, 7]",
+            "[2, 9, 5, 7]",
+            "[2, 5, 7, 9]",
+          ],
+          answer: "[5, 2, 7, 9]",
+        },
+        {
+          type: "mc",
+          question:
+            "Mengapa sebuah Queue (antrean) TIDAK cocok untuk mengimplementasikan fitur 'Undo' pada sebuah editor teks?",
+          options: [
+            "Karena operasi Dequeue lebih kompleks daripada operasi Pop.",
+            "Karena Queue terlalu lambat untuk menyimpan riwayat pengetikan.",
+            "Karena Queue memiliki kapasitas yang terbatas.",
+            "Karena Queue akan membatalkan aksi pertama yang dilakukan, bukan yang terakhir (prinsip FIFO).",
+            "Karena Queue hanya bisa menyimpan angka, bukan teks aksi.",
+          ],
+          answer:
+            "Karena Queue akan membatalkan aksi pertama yang dilakukan, bukan yang terakhir (prinsip FIFO).",
+        },
+        {
+          type: "mc",
+          question:
+            "Operasi untuk menghapus atau mengambil elemen dari bagian depan sebuah Queue disebut…",
+          options: ["Enqueue", "Dequeue", "Front", "Pop", "Peek"],
+          answer: "Dequeue",
+        },
+
+        // 5 Soal Esai
+        // {
+        //   type: "essay",
+        //   key: "binary_search",
+        //   question:
+        //     "Perpustakaan sekolah memiliki 1000 buku yang telah diberi nomor ID unik dari 1 hingga 1000 dan disimpan dalam lemari arsip yang sudah terurut. Seorang siswa ingin mencari buku dengan ID 789.\n\nJelaskan langkah-langkah yang akan dilakukan oleh sistem pencarian menggunakan Binary Search untuk menemukan lokasi buku tersebut! Tunjukkan setidaknya 3 langkah pertama dalam proses pencarian (tebakan pertama, kedua, dan ketiga).",
+        // },
+        // {
+        //   type: "essay",
+        //   key: "bubble_sort",
+        //   question:
+        //     "Seorang guru ingin mengurutkan nilai ujian 5 siswa dari yang terkecil hingga terbesar. Nilai-nilai tersebut adalah: [75, 82, 68, 95, 70].\n\nTunjukkan proses pengurutan nilai tersebut menggunakan Bubble Sort langkah demi langkah (iterasi per iterasi) hingga daftar tersebut sepenuhnya terurut.",
+        // },
+        // {
+        //   type: "essay",
+        //   key: "selection_sort",
+        //   question:
+        //     "Dengan menggunakan daftar nilai yang sama seperti soal nomor 2: [75, 82, 68, 95, 70].\n\nTunjukkan proses pengurutan nilai tersebut menggunakan Selection Sort langkah demi langkah (iterasi per iterasi) hingga daftar tersebut sepenuhnya terurut.",
+        // },
+        // {
+        //   type: "essay",
+        //   key: "stack_vs_queue",
+        //   question:
+        //     "Sebuah restoran cepat saji memiliki dua proses utama:\na. Tumpukan piring bersih di sebelah mesin cuci piring. Koki akan mengambil piring dari tumpukan paling atas.\nb. Sistem pesanan pelanggan di kasir. Pesanan yang masuk pertama kali akan diproses lebih dulu.\n\nTentukan struktur data mana (Stack atau Queue) yang paling tepat untuk merepresentasikan proses (a) dan proses (b). Berikan penjelasan logis untuk setiap pilihan Anda!",
+        // },
+        // {
+        //   type: "essay",
+        //   key: "priority_queue",
+        //   question:
+        //     "Sebuah sistem manajemen tugas di rumah sakit perlu memproses permintaan tes laboratorium. Ada permintaan biasa dan ada permintaan darurat (cito) yang harus didahulukan.\n\nApakah struktur data Queue standar cocok untuk sistem ini? Jelaskan jawabanmu dan usulkan perbaikan jika perlu!",
+        // },
+      ];
+
+      // --- DOM ELEMENTS & STATE ---
+      const startScreen = document.getElementById("start-screen"),
+        quizScreen = document.getElementById("quiz-screen"),
+        resultScreen = document.getElementById("result-screen");
+      const studentNameEl = document.getElementById("student-name"),
+        studentClassEl = document.getElementById("student-class");
+      const startBtn = document.getElementById("start-btn"),
+        nextBtn = document.getElementById("next-btn"),
+        prevBtn = document.getElementById("prev-btn"),
+        markBtn = document.getElementById("mark-btn"),
+        submitBtn = document.getElementById("submit-btn");
+      const questionNumberEl = document.getElementById("question-number"),
+        questionTypeEl = document.getElementById("question-type"),
+        questionTextEl = document.getElementById("question-text");
+      const optionsContainer = document.getElementById("options-container"),
+        essayContainer = document.getElementById("essay-container"),
+        essayAnswerEl = document.getElementById("essay-answer");
+      const timerEl = document.getElementById("timer"),
+        navPanel = document.getElementById("nav-panel");
+      const confirmModal = document.getElementById("confirm-modal"),
+        modalText = document.getElementById("modal-text"),
+        modalCancelBtn = document.getElementById("modal-cancel-btn"),
+        modalConfirmBtn = document.getElementById("modal-confirm-btn");
+      const submissionLoading = document.getElementById("submission-loading"),
+        submissionSuccess = document.getElementById("submission-success"),
+        submissionError = document.getElementById("submission-error");
+      const retrySubmitBtn = document.getElementById("retry-submit-btn");
+
+      let currentQuestionIndex = 0,
+        timer,
+        timeLeft = 2700;
+      let userAnswers = {},
+        shuffledQuestions = [],
+        questionStatuses = [];
+      let selectedOptionButton = null;
+
+      // --- FUNCTIONS ---
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      function startQuiz() {
+        const studentName = studentNameEl.value.trim();
+        const studentClass = studentClassEl.value.trim();
+        if (!studentName || !studentClass) {
+          alert("Nama dan Kelas wajib diisi!");
+          return;
+        }
+        startScreen.classList.add("hidden");
+        quizScreen.classList.remove("hidden");
+
+        currentQuestionIndex = 0;
+        timeLeft = 2700; // 45 mins
+        userAnswers = {};
+
+        const mcQuestions = questions.filter((q) => q.type === "mc");
+        const essayQuestions = questions.filter((q) => q.type === "essay");
+        shuffleArray(mcQuestions);
+        shuffledQuestions = [...mcQuestions, ...essayQuestions];
+
+        document.querySelector("#quiz-screen h2 span").textContent =
+          shuffledQuestions.length;
+
+        questionStatuses = new Array(shuffledQuestions.length).fill(
+          "unanswered"
+        );
+        renderNavPanel();
+        displayQuestion();
+        startTimer();
+      }
+
+      const updateTimerDisplay = () => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerEl.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
+      };
+
+      const renderNavPanel = () => {
+        navPanel.innerHTML = "";
+        shuffledQuestions.forEach((q, i) => {
+          const btn = document.createElement("button");
+          btn.textContent = i + 1;
+          btn.className =
+            "h-10 w-10 rounded-md font-semibold transition-all duration-200 nav-btn";
+          if (q.type === "essay") {
+            btn.classList.add("essay");
+          }
+          btn.addEventListener("click", () => jumpToQuestion(i));
+          navPanel.appendChild(btn);
+        });
+      };
+
+      const updateNavPanel = () => {
+        const navButtons = navPanel.childNodes;
+        navButtons.forEach((btn, i) => {
+          btn.className =
+            "h-10 w-10 rounded-md font-semibold transition-all duration-200 nav-btn";
+          if (shuffledQuestions[i].type === "essay") {
+            btn.classList.add("essay");
+          }
+          if (questionStatuses[i] === "answered") btn.classList.add("answered");
+          if (questionStatuses[i] === "marked") btn.classList.add("marked");
+          if (i === currentQuestionIndex) btn.classList.add("current");
+        });
+      };
+
+      function saveCurrentAnswer() {
+        const q = shuffledQuestions[currentQuestionIndex];
+        if (q.type === "mc") {
+          if (selectedOptionButton) {
+            userAnswers[currentQuestionIndex] = {
+              answer: selectedOptionButton.textContent,
+            };
+            if (questionStatuses[currentQuestionIndex] !== "marked")
+              questionStatuses[currentQuestionIndex] = "answered";
+          }
+        } else {
+          if (essayAnswerEl.value.trim() !== "") {
+            userAnswers[currentQuestionIndex] = { answer: essayAnswerEl.value };
+            if (questionStatuses[currentQuestionIndex] !== "marked")
+              questionStatuses[currentQuestionIndex] = "answered";
+          } else {
+            delete userAnswers[currentQuestionIndex];
+            if (questionStatuses[currentQuestionIndex] !== "marked")
+              questionStatuses[currentQuestionIndex] = "unanswered";
+          }
+        }
+      }
+      const jumpToQuestion = (index) => {
+        saveCurrentAnswer();
+        currentQuestionIndex = index;
+        displayQuestion();
+      };
+      const handlePrevNext = (direction) => {
+        saveCurrentAnswer();
+        currentQuestionIndex += direction;
+        displayQuestion();
+      };
+      function selectOption(button) {
+        if (selectedOptionButton)
+          selectedOptionButton.classList.remove("selected");
+        button.classList.add("selected");
+        selectedOptionButton = button;
+        nextBtn.disabled = false;
+      }
+      function toggleMarkForReview() {
+        if (questionStatuses[currentQuestionIndex] === "marked") {
+          questionStatuses[currentQuestionIndex] = userAnswers[
+            currentQuestionIndex
+          ]
+            ? "answered"
+            : "unanswered";
+        } else {
+          saveCurrentAnswer();
+          questionStatuses[currentQuestionIndex] = "marked";
+        }
+        updateMarkButton();
+        updateNavPanel();
+      }
+      function updateMarkButton() {
+        if (questionStatuses[currentQuestionIndex] === "marked") {
+          markBtn.textContent = "Hapus Tanda";
+          markBtn.classList.add("bg-yellow-500", "text-gray-900");
+        } else {
+          markBtn.textContent = "Tandai Ragu-ragu";
+          markBtn.classList.remove("bg-yellow-500", "text-gray-900");
+        }
+      }
+      function showConfirmation(text, onConfirm) {
+        modalText.textContent = text;
+        confirmModal.classList.remove("hidden");
+        modalConfirmBtn.onclick = () => {
+          confirmModal.classList.add("hidden");
+          onConfirm();
+        };
+        modalCancelBtn.onclick = () => confirmModal.classList.add("hidden");
+      }
+      function displayQuestion() {
+        selectedOptionButton = null;
+        const q = shuffledQuestions[currentQuestionIndex];
+        questionNumberEl.textContent = currentQuestionIndex + 1;
+        questionTextEl.textContent = q.question;
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.textContent =
+          currentQuestionIndex === shuffledQuestions.length - 1
+            ? "Selesai"
+            : "Berikutnya";
+        if (q.type === "mc") {
+          questionTypeEl.textContent = "Pilihan Ganda";
+          optionsContainer.innerHTML = "";
+          optionsContainer.classList.remove("hidden");
+          essayContainer.classList.add("hidden");
+          nextBtn.disabled = !userAnswers[currentQuestionIndex];
+          [...q.options].forEach((option) => {
+            const button = document.createElement("button");
+            button.textContent = option;
+            button.className = "w-full text-left p-4 rounded-lg option-btn";
+            button.addEventListener("click", () => selectOption(button));
+            optionsContainer.appendChild(button);
+            if (userAnswers[currentQuestionIndex]?.answer === option) {
+              selectOption(button);
+            }
+          });
+        } else {
+          questionTypeEl.textContent = "Esai";
+          optionsContainer.classList.add("hidden");
+          essayContainer.classList.remove("hidden");
+          essayAnswerEl.value = userAnswers[currentQuestionIndex]?.answer || "";
+          nextBtn.disabled = false;
+        }
+        updateNavPanel();
+        updateMarkButton();
+      }
+      function startTimer() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+          if (--timeLeft <= 0) {
+            clearInterval(timer);
+            submitData();
+          }
+          updateTimerDisplay();
+        }, 1000);
+      }
+
+      function prepareSubmissionData() {
+        saveCurrentAnswer();
+        clearInterval(timer);
+
+        let score = 0;
+        shuffledQuestions.forEach((q, i) => {
+          if (q.type === "mc") {
+            const userAnswer = userAnswers[i]?.answer;
+            if (userAnswer && userAnswer === q.answer) {
+              score++;
+            }
+          }
+        });
+
+        const essayAnswersObject = {};
+        shuffledQuestions.forEach((q, i) => {
+          if (q.type === "essay") {
+            const questionKey = q.key || `esai_tak_dikenal_${i}`;
+            const userAnswer = userAnswers[i]?.answer || "Tidak Dijawab";
+            essayAnswersObject[questionKey] = userAnswer;
+          }
+        });
+
+        // const totalMCQuestions = questions.filter(q => q.type === 'mc').length;
+        const finalScoreMC = score * 3;
+
+        const studentName = studentNameEl.value.trim();
+        const studentClass = studentClassEl.value.trim();
+
+        const data = {
+          nama: studentName,
+          kelas: studentClass,
+          skor_pg: finalScoreMC,
+          total_pg_benar: score,
+          jawaban: essayAnswersObject,
+        };
+
+        return data;
+      }
+
+      async function submitData() {
+        const submissionData = prepareSubmissionData();
+
+        quizScreen.classList.add("hidden");
+        resultScreen.classList.remove("hidden");
+        submissionLoading.classList.remove("hidden");
+        submissionSuccess.classList.add("hidden");
+        submissionError.classList.add("hidden");
+
+        try {
+          const response = await fetch("/api/submit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(submissionData),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.result === "success") {
+            submissionLoading.classList.add("hidden");
+            submissionSuccess.classList.remove("hidden");
+          } else {
+            throw new Error(result.message || "Unknown submission error");
+          }
+        } catch (error) {
+          console.error("Submission Error:", error);
+          submissionLoading.classList.add("hidden");
+          submissionError.classList.add("hidden");
+        }
+      }
+
+      // --- EVENT LISTENERS ---
+      startBtn.addEventListener("click", startQuiz);
+      prevBtn.addEventListener("click", () => handlePrevNext(-1));
+      nextBtn.addEventListener("click", () => {
+        if (currentQuestionIndex === shuffledQuestions.length - 1) {
+          showConfirmation(
+            "Apakah Anda yakin ingin menyelesaikan ujian?",
+            submitData
+          );
+        } else {
+          handlePrevNext(1);
+        }
+      });
+      submitBtn.addEventListener("click", () => {
+        const unansweredCount = questionStatuses.filter(
+          (s) => s === "unanswered"
+        ).length;
+        const text =
+          unansweredCount > 0
+            ? `Anda masih memiliki ${unansweredCount} soal yang belum dijawab. Apakah Anda yakin ingin menyelesaikan ujian?`
+            : "Apakah Anda yakin ingin menyelesaikan ujian?";
+        showConfirmation(text, submitData);
+      });
+      retrySubmitBtn.addEventListener("click", submitData);
+    </script>
+  </body>
+</html>
